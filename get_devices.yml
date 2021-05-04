@@ -1,0 +1,17 @@
+---
+  - hosts: localhost
+    connection: local
+    gather_facts: false
+    tasks:
+      - name: Get CS Devices
+        uri:
+          url: "{{ CSAPIURL }}/devices/queries/devices/v1?filter=hostname:'*-UF8E9D4'"
+          method: GET
+          headers:
+            accept: application/json
+            Authorization: Bearer {{ lookup('env','CSACCESSTOKEN') }}
+          status_code: 200
+        register: response
+      - name: Show Devices
+        ansible.builtin.debug:
+          msg: "{{ response }}"
